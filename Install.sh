@@ -1,7 +1,7 @@
 #!/bin/bash
 
 clear
-
+# Enabling git pulls
 # These are the default required packages, this may get extended below depending on requirements
 var_pack="u-boot-tools android-tools-fastboot git build-essential curl android-tools-fsutils libusb-1.0-0-dev pkg-config libncurses5-dev"
 var_pack="$var_pack mercurial cmake unzip device-tree-compiler libncurses-dev cu linux-image-extra-virtual python-dev python-pip g++-arm-linux-gnueabihf gcc-arm-linux-gnueabihf binutils-arm-linux-gnueabihf pkg-config"
