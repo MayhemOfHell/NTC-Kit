@@ -5,8 +5,13 @@ This repo will be used for the development of a single directory that allows the
 
 
 sunxi-tools             = ~/NTC-Kit/sunxitools				// Holds The Downloaded Or Copied Linux Kernel
+
 CHIP-linux				= ~/NTC-Kit/linux					// Holds The Downloaded Or Copied Linux Kernel
+
 CHIP-tools				= ~/NTC-Kit/tools					// Holds The CHIP related tools, eg flashers and so on
+
 CHIP-buildroot		    = ~/NTC-Kit/buildroot			    // Holds The BuildRoot Program To Compile The Distro
+
 					    = ~/NTC-Kit/output				    // Folder Used To Store The Built Distro
+                        
 					    = ~/NTC-Kit/ready					// Final Folder - Users Can Find Prepared Files Here
