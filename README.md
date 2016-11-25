@@ -9,3 +9,7 @@ This repo will be used for the development of a single directory that allows the
 - ~/NTC-Kit/buildroot     // Holds The BuildRoot Program To Compile The Distro
 - ~/NTC-Kit/output        // Folder Used To Store The Built Distro
 - ~/NTC-Kit/ready         // Final Folder - Users Can Find Prepared Files Here
+
+
+## Still Learning Github
+You will see that i am still learning github, So i apologise if things are not done right for now.
