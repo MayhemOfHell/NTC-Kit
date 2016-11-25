@@ -2,6 +2,7 @@
 
 This repo will be used for the development of a single directory that allows the user to enter a few simple details and generate their own linux kernel build along with a ready to reploy object that they can easily flash to their chip or store for later usage.
 
+## What Is This
 
 
 - sunxi-tools		 = ~/NTC-Kit/sunxitools		// Holds The Downloaded Or Copied Linux Kernel
