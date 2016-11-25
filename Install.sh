@@ -33,6 +33,7 @@ fi
 
 echo
 echo "       STEP 03: Installing required packages - performed as sudo, password will be prompted"
+echo "         --- This step can take a long time as all required packages are being installed with apt-get"
 sudo apt-get -qq -y update
 sudo apt-get -qq -y install $var_pack
 echo "             - STEP PASSED = Packages should have been updated and installed via apt-get"
