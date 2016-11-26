@@ -83,3 +83,7 @@ echo
 
 echo "       STEP 09: Cloning Debian 4.4.13-ntc-mlc"
 git clone --single-branch --branch debian/4.4.13-ntc-mlc --depth 1 https://github.com/NextThingCo/CHIP-linux.git linux
+
+
+source config.cfg
+echo "Kernel: $ntckit_kernel"
