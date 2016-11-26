@@ -89,9 +89,6 @@ if [ "$ntckit_inst_continue" = true ]; then
     echo  -e "         \033[0;32mStep 04:\033[0m Create udev entry for USB Driver & Reload Rules"
     echo  "                  You may be prompted for your password to allow sudo for this step"
     echo
-    ntckit_inst_udevfile="Test.txt"
-    #echo "Some random stuff here" >> Test.txt
-    #echo -e "\n Adding udev rule for Allwinner device"
     if [[ -f "$ntckit_inst_udevfile" ]]; then
         echo  "                  - $ntckit_inst_udevfile has been deleted so it can be regenerated"
     	sudo rm "$ntckit_inst_udevfile"
@@ -101,7 +98,8 @@ if [ "$ntckit_inst_continue" = true ]; then
     echo 'SUBSYSTEM=="usb", ATTRS{idVendor}=="1f3a", ATTRS{idProduct}=="1010", GROUP="plugdev", MODE="0660" SYMLINK+="usb-chip-fastboot"' >> "$ntckit_inst_udevfile"
     echo 'SUBSYSTEM=="usb", ATTRS{idVendor}=="067b", ATTRS{idProduct}=="2303", GROUP="plugdev", MODE="0660" SYMLINK+="usb-serial-adapter"' >> "$ntckit_inst_udevfile"
     echo  "                  - $ntckit_inst_udevfile has been created"
-    #sudo udevadm control --reload-rules
+    sudo udevadm control --reload-rules
+    echo  "                  - udev rules have been reloaded"
 fi
 
 # STEP 5 - Create directories and git clone NTC- based requirements
@@ -133,6 +131,11 @@ if [ "$ntckit_inst_continue" = true ]; then
     make
     cd ".."
     echo  "                  - sunxitools    Has been built"
+    if [[ -L /usr/local/bin/fel ]]; then
+    	sudo rm /usr/local/bin/fel
+    fi
+    sudo ln -s $PWD/fel /usr/local/bin/fel
+    echo  "                  - sunxitools    symlink to fel created in /usr/local/bin/fel"
 
     if [ ! -d "tools" ]; then
         git clone http://github.com/NextThingCo/CHIP-tools tools
@@ -178,7 +181,3 @@ exit 1
 
 #pushd sunxi-tools
 #make
-#if [[ -L /usr/local/bin/fel ]]; then
-	#sudo rm /usr/local/bin/fel
-#fi
-#sudo ln -s $PWD/fel /usr/local/bin/fel
