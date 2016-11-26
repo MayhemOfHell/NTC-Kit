@@ -8,7 +8,7 @@ ntckit_inst_summary="Waiting to update system and install required packages"
 ntckit_inst_udevfile="/etc/udev/rules.d/99-allwinner.rules"
 
 # These are the default required packages, this may get extended below depending on requirements
-var_pack="u-boot-tools android-tools-fastboot git build-essential curl android-tools-fsutils libusb-1.0-0-dev pkg-config libncurses5-dev"
+var_pack="u-boot-tools android-tools-fastboot git build-essential curl android-tools-fsutils libusb-1.0-0-dev pkg-config libncurses5-dev bc"
 var_pack="$var_pack mercurial cmake unzip device-tree-compiler libncurses-dev cu linux-image-extra-virtual python-dev python-pip g++-arm-linux-gnueabihf gcc-arm-linux-gnueabihf binutils-arm-linux-gnueabihf pkg-config"
 if uname -a |grep -q 64; then
   var_pack="$var_pack libc6-i386 lib32stdc++6 lib32z1 libusb-1.0-0:i386"
@@ -170,6 +170,8 @@ if [ "$ntckit_inst_continue" = true ]; then
             echo  "                  - linux         Directory has been updated from github"
         fi
     fi
+    ntckit_inst_status="Complete"
+    ntckit_inst_summary="The script has completed, now you can configure Config.cfg or start Build.sh"
 fi
 
 
@@ -177,4 +179,3 @@ echo
 echo -e "\033[0;32m     $ntckit_inst_name Installation Status:\033[0m $ntckit_inst_status"
 echo -e "\033[0;32m    $ntckit_inst_name Installation Summary:\033[0m $ntckit_inst_summary"
 echo
-exit 1
