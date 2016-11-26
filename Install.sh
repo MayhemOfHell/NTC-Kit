@@ -103,6 +103,12 @@ fi
 if [ "$ntckit_inst_continue" = true ]; then
     echo
     echo  -e "         \033[0;32mStep 05:\033[0m Create local directory structure and git clone required NTC repositories"
+    if [ ! -d "modules" ]; then
+        mkdir "modules"
+        echo  "                  - modules       Directory has been created"
+    else
+        echo  "                  - modules       Directory already exists"
+    fi
     if [ ! -d "output" ]; then
         mkdir "output"
         echo  "                  - output        Directory has been created"
