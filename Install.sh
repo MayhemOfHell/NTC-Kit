@@ -26,10 +26,6 @@ if [ ! "$EUID" -ne 0 ]; then
 fi
 
 
-# Save The Users Screen So We Can Retore It Once We're Done & Clear In The Mean Time
-tput smcup
-clear
-
 echo
 echo
 echo
@@ -170,14 +166,8 @@ if [ "$ntckit_inst_continue" = true ]; then
 fi
 
 
-# Restore The Users Screen Back To Before We Started.. We'll give them a small message on their existing screen as a summary
-#tput rmcup
 echo
 echo -e "\033[0;32m     $ntckit_inst_name Installation Status:\033[0m $ntckit_inst_status"
 echo -e "\033[0;32m    $ntckit_inst_name Installation Summary:\033[0m $ntckit_inst_summary"
 echo
 exit 1
-
-
-#pushd sunxi-tools
-#make
