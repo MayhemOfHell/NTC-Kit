@@ -24,9 +24,14 @@ fi
 clear   # Clear The Screen - I hate losing my placing when searching over my console output
 
 
-
+cd "buildroot"
+if [ ! -f ".config" ]; then
+    make "chip_defconfig"
+fi
 cd "linux"
-make defconfig
+if [ ! -f ".config" ]; then
+    make "defconfig"
+fi
 #make ARCH="$ntckit_arc" "CROSS_COMPILE=$ntckit_cross" menuconfig "-j $ntckit_cores"
 #make ARCH="$ntckit_arc" "CROSS_COMPILE=$ntckit_cross" "LOCALVERSION=$ntckit_suffix" "-j $ntckit_cores"
 #build modules
