@@ -1,89 +1,184 @@
 #!/bin/bash
+# Variables that are used during this script (Config.cfg will also import more)
+ntckit_inst_continue=true
+ntckit_inst_name="NTC-Kit"
+ntckit_inst_installed=false
+ntckit_inst_status="Not Complete"
+ntckit_inst_summary="Waiting to update system and install required packages"
+ntckit_inst_udevfile="/etc/udev/rules.d/99-allwinner.rules"
 
-clear   # Clear The Screen - I hate losing my placing when searching over my console output
 # These are the default required packages, this may get extended below depending on requirements
 var_pack="u-boot-tools android-tools-fastboot git build-essential curl android-tools-fsutils libusb-1.0-0-dev pkg-config libncurses5-dev"
 var_pack="$var_pack mercurial cmake unzip device-tree-compiler libncurses-dev cu linux-image-extra-virtual python-dev python-pip g++-arm-linux-gnueabihf gcc-arm-linux-gnueabihf binutils-arm-linux-gnueabihf pkg-config"
-
-echo
-echo
-echo "  MayDev - NTC-Kit - Linux OS Building For NTC Chip"
-echo
-echo "    This script will install all required packages and then also setup the basic development folder."
-echo
-echo "       STEP 01: Checking if running as a normal user"
-if [ "$EUID" -ne 0 ]; then
-  echo "             - STEP PASSED"
-  echo
-else
-  echo "             - STEP FAILED = You are running as root.. Please execute this script as your normal user"
-  echo
-  exit
-fi
-
-#echo $USER
-echo "       STEP 02: Detecting if running 32 or 64 bit system"
 if uname -a |grep -q 64; then
-  echo "             - STEP PASSED = Detected 64Bit System"
   var_pack="$var_pack libc6-i386 lib32stdc++6 lib32z1 libusb-1.0-0:i386"
-else
-  echo "             - STEP PASSED = Detected 32Bit System"
 fi
 
 
+
+# Check that script is not being run as sudo
+if [ ! "$EUID" -ne 0 ]; then
+    echo
+    echo " - Install.sh must be run as a normal user, do not use sudoor exit back to your normal user from root"
+    echo " - You will be prompted early for your password for the package installation and user groups stage."
+    echo
+    exit 1
+fi
+
+
+# Save The Users Screen So We Can Retore It Once We're Done & Clear In The Mean Time
+tput smcup
+clear
+
 echo
-echo "       STEP 03: Installing required packages - performed as sudo, password will be prompted"
-echo "         --- This step can take a long time as all required packages are being installed with apt-get"
-sudo apt-get -qq -y update
-sudo apt-get -qq -y install $var_pack
-echo "             - STEP PASSED = Packages should have been updated and installed via apt-get"
 echo
-
-echo "       STEP 04: Adding user to required groups"
-sudo usermod -a -G dialout $(logname)
-sudo usermod -a -G plugdev $(logname)
-echo "             - STEP PASSED = User added to groups dialout & plugdev"
 echo
+echo "------------------------------------------------------------------------"
+echo "       $ntckit_inst_name - Installation Script"
+echo "------------------------------------------------------------------------"
 
 
-echo "       STEP 05: Creating Device Rules (USB Driver Detection)"
-#echo -e "\n Adding udev rule for Allwinner device"
-#echo -e 'SUBSYSTEM=="usb", ATTRS{idVendor}=="1f3a", ATTRS{idProduct}=="efe8", GROUP="plugdev", MODE="0660" SYMLINK+="usb-chip"
-#SUBSYSTEM=="usb", ATTRS{idVendor}=="18d1", ATTRS{idProduct}=="1010", GROUP="plugdev", MODE="0660" SYMLINK+="usb-chip-fastboot"
-#SUBSYSTEM=="usb", ATTRS{idVendor}=="1f3a", ATTRS{idProduct}=="1010", GROUP="plugdev", MODE="0660" SYMLINK+="usb-chip-fastboot"
-#SUBSYSTEM=="usb", ATTRS{idVendor}=="067b", ATTRS{idProduct}=="2303", GROUP="plugdev", MODE="0660" SYMLINK+="usb-serial-adapter"
-#' | sudo tee /etc/udev/rules.d/99-allwinner.rules
-#sudo udevadm control --reload-rules
-echo "             - STEP PASSED = udev rules file created"
+# STEP 1 - Load Config.cfg and verify it looks correct
 echo
+echo  -e "         \033[0;32mStep 01:\033[0m Loading Local Configuration File"
+if [ ! -f Config.cfg ]; then
+    ntckit_inst_status="Not Complete - Unable to locate Config.cfg"
+    ntckit_inst_summary="Unable to locate Config.cfg, make sure you are executing Install.sh in the directory that it exists in"
+    ntckit_inst_continue=false
+else
+    echo "                   - Found Config.cfg , Checking if settings are valid"
+    source Config.cfg
+    echo  "                  - Config.cfg has been verified"
+fi
 
-mkdir output
-mkdir ready
 
-echo "       STEP 06: Cloning Sunxi Tools - Required For FEL"
-git clone http://github.com/NextThingCo/sunxi-tools sunxitools
+
+
+# STEP 2 - Perform update and installation of packages
+if [ "$ntckit_inst_continue" = true ]; then
+    echo
+    echo  -e "         \033[0;32mStep 02:\033[0m Perform APT-GET & APT-GET INSTALL"
+    echo  "                  You may be prompted for your password to allow sudo for this step"
+    if [ "$ntckit_sys_update" = true ]; then
+        sudo apt-get -y update
+    else
+        echo  "                  NOTE = apt-get update skipped as per Config.cfg->ntckit_sys_update setting"
+    fi
+    echo
+    sudo apt-get -y install $var_pack
+fi
+
+
+
+# STEP 3 - Add user to required groups
+if [ "$ntckit_inst_continue" = true ]; then
+    echo
+    echo  -e "         \033[0;32mStep 03:\033[0m Adding user to dialout & plugdev groups"
+    echo  "                  You may be prompted for your password to allow sudo for this step"
+    echo
+    sudo usermod -a -G dialout $(logname)
+    sudo usermod -a -G plugdev $(logname)
+    echo  "                  - User has been added to dialout & plugdev groups"
+fi
+
+
+
+# STEP 4 - Create udev entry for USB Driver
+if [ "$ntckit_inst_continue" = true ]; then
+    echo
+    echo  -e "         \033[0;32mStep 04:\033[0m Create udev entry for USB Driver & Reload Rules"
+    echo  "                  You may be prompted for your password to allow sudo for this step"
+    echo
+    ntckit_inst_udevfile="Test.txt"
+    #echo "Some random stuff here" >> Test.txt
+    #echo -e "\n Adding udev rule for Allwinner device"
+    if [[ -f "$ntckit_inst_udevfile" ]]; then
+        echo  "                  - $ntckit_inst_udevfile has been deleted so it can be regenerated"
+    	sudo rm "$ntckit_inst_udevfile"
+    fi
+    echo 'SUBSYSTEM=="usb", ATTRS{idVendor}=="1f3a", ATTRS{idProduct}=="efe8", GROUP="plugdev", MODE="0660" SYMLINK+="usb-chip"' >> "$ntckit_inst_udevfile"
+    echo 'SUBSYSTEM=="usb", ATTRS{idVendor}=="18d1", ATTRS{idProduct}=="1010", GROUP="plugdev", MODE="0660" SYMLINK+="usb-chip-fastboot"' >> "$ntckit_inst_udevfile"
+    echo 'SUBSYSTEM=="usb", ATTRS{idVendor}=="1f3a", ATTRS{idProduct}=="1010", GROUP="plugdev", MODE="0660" SYMLINK+="usb-chip-fastboot"' >> "$ntckit_inst_udevfile"
+    echo 'SUBSYSTEM=="usb", ATTRS{idVendor}=="067b", ATTRS{idProduct}=="2303", GROUP="plugdev", MODE="0660" SYMLINK+="usb-serial-adapter"' >> "$ntckit_inst_udevfile"
+    echo  "                  - $ntckit_inst_udevfile has been created"
+    #sudo udevadm control --reload-rules
+fi
+
+# STEP 5 - Create directories and git clone NTC- based requirements
+if [ "$ntckit_inst_continue" = true ]; then
+    echo
+    echo  -e "         \033[0;32mStep 05:\033[0m Create local directory structure and git clone required NTC repositories"
+    if [ ! -d "output" ]; then
+        mkdir "output"
+        echo  "                  - output        Directory has been created"
+    else
+        echo  "                  - output        Directory already exists"
+    fi
+    if [ ! -d "ready" ]; then
+        mkdir "ready"
+        echo  "                  - ready         Directory has been created"
+    else
+        echo  "                  - ready         Directory already exists"
+    fi
+    if [ ! -d "sunxitools" ]; then
+        git clone http://github.com/NextThingCo/sunxi-tools sunxitools
+        echo  "                  - sunxitools    Directory has been cloned from github"
+    else
+        cd "sunxitools"
+        git pull
+        cd ".."
+        echo  "                  - sunxitools    Directory has been updated from github"
+    fi
+    cd "sunxitools"
+    make
+    cd ".."
+    echo  "                  - sunxitools    Has been built"
+
+    if [ ! -d "tools" ]; then
+        git clone http://github.com/NextThingCo/CHIP-tools tools
+        echo  "                  - tools         Directory has been cloned from github"
+    else
+        cd "tools"
+        git pull
+        cd ".."
+        echo  "                  - tools         Directory has been updated from github"
+    fi
+    if [ ! -d "buildroot" ]; then
+        git clone http://github.com/NextThingCo/CHIP-buildroot buildroot
+        echo  "                  - buildroot     Directory has been cloned from github"
+    else
+        cd "buildroot"
+        git pull
+        cd ".."
+        echo  "                  - buildroot     Directory has been updated from github"
+    fi
+
+    if [ "$ntckit_inst_osget" = true ]; then
+        if [ ! -d "linux" ]; then
+            git clone --single-branch --branch "debian/$ntckit_kernel$ntckit_suffix" --depth 1 https://github.com/NextThingCo/CHIP-linux.git linux
+            echo  "                  - linux         Directory has been cloned from github"
+        else
+            cd "linux"
+            git pull
+            cd ".."
+            echo  "                  - linux         Directory has been updated from github"
+        fi
+    fi
+fi
+
+
+# Restore The Users Screen Back To Before We Started.. We'll give them a small message on their existing screen as a summary
+#tput rmcup
+echo
+echo -e "\033[0;32m     $ntckit_inst_name Installation Status:\033[0m $ntckit_inst_status"
+echo -e "\033[0;32m    $ntckit_inst_name Installation Summary:\033[0m $ntckit_inst_summary"
+echo
+exit 1
+
+
 #pushd sunxi-tools
 #make
 #if [[ -L /usr/local/bin/fel ]]; then
 	#sudo rm /usr/local/bin/fel
 #fi
 #sudo ln -s $PWD/fel /usr/local/bin/fel
-echo "             - STEP PASSED = Downloaded From GIT"
-echo
-
-echo "       STEP 07: Cloning CHIP-tools - Required for flashing"
-git clone http://github.com/NextThingCo/CHIP-tools tools
-echo "             - STEP PASSED = Downloaded From GIT"
-echo
-
-echo "       STEP 08: Cloning CHIP-buildroot - Required for compiling"
-git clone http://github.com/NextThingCo/CHIP-buildroot buildroot
-echo "             - STEP PASSED = Downloaded From GIT"
-echo
-
-echo "       STEP 09: Cloning Debian 4.4.13-ntc-mlc"
-git clone --single-branch --branch debian/4.4.13-ntc-mlc --depth 1 https://github.com/NextThingCo/CHIP-linux.git linux
-
-
-source config.cfg
-echo "Kernel: $ntckit_kernel"
