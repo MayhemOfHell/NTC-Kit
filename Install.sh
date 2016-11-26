@@ -20,7 +20,7 @@ fi
 if [ ! "$EUID" -ne 0 ]; then
     echo
     echo " - Install.sh must be run as a normal user, do not use sudoor exit back to your normal user from root"
-    echo " - You will be prompted early for your password for the package installation and user groups stage."
+    echo " - You will be prompted for your password as required depending how quick this install runs"
     echo
     exit 1
 fi
@@ -89,10 +89,11 @@ if [ "$ntckit_inst_continue" = true ]; then
         echo  "                  - $ntckit_inst_udevfile has been deleted so it can be regenerated"
     	sudo rm "$ntckit_inst_udevfile"
     fi
-    echo 'SUBSYSTEM=="usb", ATTRS{idVendor}=="1f3a", ATTRS{idProduct}=="efe8", GROUP="plugdev", MODE="0660" SYMLINK+="usb-chip"' >> "$ntckit_inst_udevfile"
-    echo 'SUBSYSTEM=="usb", ATTRS{idVendor}=="18d1", ATTRS{idProduct}=="1010", GROUP="plugdev", MODE="0660" SYMLINK+="usb-chip-fastboot"' >> "$ntckit_inst_udevfile"
-    echo 'SUBSYSTEM=="usb", ATTRS{idVendor}=="1f3a", ATTRS{idProduct}=="1010", GROUP="plugdev", MODE="0660" SYMLINK+="usb-chip-fastboot"' >> "$ntckit_inst_udevfile"
-    echo 'SUBSYSTEM=="usb", ATTRS{idVendor}=="067b", ATTRS{idProduct}=="2303", GROUP="plugdev", MODE="0660" SYMLINK+="usb-serial-adapter"' >> "$ntckit_inst_udevfile"
+    echo 'SUBSYSTEM=="usb", ATTRS{idVendor}=="1f3a", ATTRS{idProduct}=="efe8", GROUP="plugdev", MODE="0660" SYMLINK+="usb-chip"' | sudo tee -a "$ntckit_inst_udevfile"
+    echo 'SUBSYSTEM=="usb", ATTRS{idVendor}=="18d1", ATTRS{idProduct}=="1010", GROUP="plugdev", MODE="0660" SYMLINK+="usb-chip-fastboot"' | sudo tee -a "$ntckit_inst_udevfile"
+    echo 'SUBSYSTEM=="usb", ATTRS{idVendor}=="1f3a", ATTRS{idProduct}=="1010", GROUP="plugdev", MODE="0660" SYMLINK+="usb-chip-fastboot"' | sudo tee -a "$ntckit_inst_udevfile"
+    echo 'SUBSYSTEM=="usb", ATTRS{idVendor}=="067b", ATTRS{idProduct}=="2303", GROUP="plugdev", MODE="0660" SYMLINK+="usb-serial-adapter"' | sudo tee -a "$ntckit_inst_udevfile"
+
     echo  "                  - $ntckit_inst_udevfile has been created"
     sudo udevadm control --reload-rules
     echo  "                  - udev rules have been reloaded"
@@ -155,7 +156,7 @@ if [ "$ntckit_inst_continue" = true ]; then
     if [ "$ntckit_inst_osget" = true ]; then
         if [ ! -d "linux" ]; then
             git clone --single-branch --branch "debian/$ntckit_kernel$ntckit_suffix" --depth 1 https://github.com/NextThingCo/CHIP-linux.git linux
-            echo  "                  - linux         Directory has been cloned from github"
+            echo  "                  - linux         Directory has been cloned from github - $ntckit_kernel$ntckit_suffix"
         else
             cd "linux"
             git pull
