@@ -99,6 +99,10 @@ if [ "$ntckit_inst_continue" = true ]; then
     echo  "                  - udev rules have been reloaded"
 fi
 
+# Get NTC Chip - Board Config
+#svn export https://github.com/NextThingCo/CHIP-buildroot/trunk/board/nextthing/chip/
+
+
 # STEP 5 - Create directories and git clone NTC- based requirements
 if [ "$ntckit_inst_continue" = true ]; then
     echo
