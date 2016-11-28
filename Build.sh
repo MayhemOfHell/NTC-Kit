@@ -40,6 +40,8 @@ if [ ! -d "buildroot_ntc" ]; then
 	cp -a "buildroot_ntc/configs/chip_defconfig" "buildroot_orig/configs/chip_defconfig"
 	cp -a "buildroot_ntc/configs/chippro_defconfig" "buildroot_orig/configs/chippro_defconfig"
 	cp -a "buildroot_ntc/board/nextthing" "buildroot_orig/board/nextthing"
+	cp -a "buildroot_ntc/linux" "buildroot_orig/linux"
+
 fi
 
 #cfgChangeValue "chip_defconfig" "BR2_LINUX_KERNEL_CUSTOM_REPO_VERSION" '"debian/4.4.13-ntc-mlc-bdm"'
