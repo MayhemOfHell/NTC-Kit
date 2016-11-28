@@ -99,10 +99,6 @@ if [ "$ntckit_inst_continue" = true ]; then
     echo  "                  - udev rules have been reloaded"
 fi
 
-# Get NTC Chip - Board Config
-#svn export https://github.com/NextThingCo/CHIP-buildroot/trunk/board/nextthing/chip/
-
-
 # STEP 5 - Create directories and git clone NTC- based requirements
 if [ "$ntckit_inst_continue" = true ]; then
     echo
@@ -125,27 +121,26 @@ if [ "$ntckit_inst_continue" = true ]; then
     else
         echo  "                  - ready         Directory already exists"
     fi
-    if [ ! -d "sunxitools" ]; then
-        git clone http://github.com/NextThingCo/sunxi-tools sunxitools
+    if [ ! -d "$ntckit_path_sunxitools" ]; then
+        git clone --depth 1 http://github.com/NextThingCo/sunxi-tools "$ntckit_path_sunxitools"
         echo  "                  - sunxitools    Directory has been cloned from github"
     else
-        cd "sunxitools"
+        cd "$ntckit_path_sunxitools"
         git pull
         cd ".."
         echo  "                  - sunxitools    Directory has been updated from github"
     fi
-    cd "sunxitools"
-    make
-    cd ".."
-    echo  "                  - sunxitools    Has been built"
-    if [[ -L /usr/local/bin/fel ]]; then
-    	sudo rm /usr/local/bin/fel
-    fi
-    sudo ln -s $PWD/fel /usr/local/bin/fel
-    echo  "                  - sunxitools    symlink to fel created in /usr/local/bin/fel"
+
+	pushd "$ntckit_path_sunxitools"
+	make
+	if [[ -L /usr/local/bin/fel ]]; then
+		sudo rm /usr/local/bin/fel
+	fi
+	sudo ln -s $PWD/fel /usr/local/bin/fel
+	popd
 
     if [ ! -d "tools" ]; then
-        git clone http://github.com/NextThingCo/CHIP-tools tools
+        git clone --depth 1 http://github.com/NextThingCo/CHIP-tools tools
         echo  "                  - tools         Directory has been cloned from github"
     else
         cd "tools"
@@ -154,7 +149,7 @@ if [ "$ntckit_inst_continue" = true ]; then
         echo  "                  - tools         Directory has been updated from github"
     fi
     if [ ! -d "buildroot" ]; then
-        git clone http://github.com/NextThingCo/CHIP-buildroot buildroot
+        git clone --depth 1 http://github.com/NextThingCo/CHIP-buildroot buildroot
         echo  "                  - buildroot     Directory has been cloned from github"
     else
         cd "buildroot"
