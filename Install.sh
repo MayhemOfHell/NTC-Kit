@@ -9,7 +9,7 @@ ntckit_inst_udevfile="/etc/udev/rules.d/99-allwinner.rules"
 
 # These are the default required packages, this may get extended below depending on requirements
 var_pack="u-boot-tools android-tools-fastboot git build-essential curl android-tools-fsutils libusb-1.0-0-dev pkg-config libncurses5-dev bc"
-var_pack="$var_pack mercurial cmake unzip device-tree-compiler libncurses-dev cu linux-image-extra-virtual python-dev python-pip g++-arm-linux-gnueabihf gcc-arm-linux-gnueabihf binutils-arm-linux-gnueabihf pkg-config"
+var_pack="$var_pack mercurial cmake unzip device-tree-compiler libncurses-dev cu linux-image-extra-virtual python-dev python-pip g++-arm-linux-gnueabihf gcc-arm-linux-gnueabihf binutils-arm-linux-gnueabihf pkg-config dialog"
 if uname -a |grep -q 64; then
   var_pack="$var_pack libc6-i386 lib32stdc++6 lib32z1 libusb-1.0-0:i386"
 fi
@@ -148,15 +148,37 @@ if [ "$ntckit_inst_continue" = true ]; then
         cd ".."
         echo  "                  - tools         Directory has been updated from github"
     fi
-    if [ ! -d "buildroot" ]; then
-        git clone --depth 1 http://github.com/NextThingCo/CHIP-buildroot buildroot
-        echo  "                  - buildroot     Directory has been cloned from github"
+
+    if [ ! -d "buildroot_ntc" ]; then
+        git clone --depth 1 http://github.com/NextThingCo/CHIP-buildroot buildroot_ntc
+        echo  "                  - buildroot_ntc     Directory has been cloned from github"
     else
-        cd "buildroot"
+        cd "buildroot_ntc"
         git pull
         cd ".."
-        echo  "                  - buildroot     Directory has been updated from github"
+        echo  "                  - buildroot_ntc     Directory has been updated from github"
     fi
+
+    if [ ! -d "buildroot_orig" ]; then
+        git clone --depth 1 https://github.com/buildroot/buildroot.git buildroot_orig
+        echo  "                  - buildroot_orig     Directory has been cloned from github"
+    else
+        cd "buildroot_orig"
+        git pull
+        cd ".."
+        echo  "                  - buildroot_orig     Directory has been updated from github"
+    fi
+
+
+
+	if [ -d "buildroot_ntc" ]; then
+		cp -a "buildroot_ntc/configs/chip_defconfig" "buildroot_orig/configs/chip_defconfig"
+		cp -a "buildroot_ntc/configs/chippro_defconfig" "buildroot_orig/configs/chippro_defconfig"
+		cp -a "buildroot_ntc/board/nextthing" "buildroot_orig/board/nextthing"
+		cp -afR "buildroot_ntc/linux/." "buildroot_orig/linux"
+
+	fi
+
 
     if [ "$ntckit_inst_osget" = true ]; then
         if [ ! -d "linux" ]; then
@@ -169,6 +191,14 @@ if [ "$ntckit_inst_continue" = true ]; then
             echo  "                  - linux         Directory has been updated from github"
         fi
     fi
+    
+
+	cd "buildroot_orig"
+	if [ ! -f ".config" ]; then
+	    make "chip_defconfig"
+	fi
+	cd ".."
+    
     ntckit_inst_status="Complete"
     ntckit_inst_summary="The script has completed, now you can configure Config.cfg or start Build.sh"
 fi
