@@ -34,17 +34,12 @@ else
 fi
 
 
-
-if [ ! -d "buildroot_ntc" ]; then
-	git clone --depth 1 https://github.com/NextThingCo/CHIP-buildroot.git buildroot_ntc
-	cp -a "buildroot_ntc/configs/chip_defconfig" "buildroot_orig/configs/chip_defconfig"
-	cp -a "buildroot_ntc/configs/chippro_defconfig" "buildroot_orig/configs/chippro_defconfig"
-	cp -a "buildroot_ntc/board/nextthing" "buildroot_orig/board/nextthing"
-	cp -a "buildroot_ntc/linux" "buildroot_orig/linux"
-
-fi
-
 #cfgChangeValue "chip_defconfig" "BR2_LINUX_KERNEL_CUSTOM_REPO_VERSION" '"debian/4.4.13-ntc-mlc-bdm"'
+
+
+cd "buildroot_orig"
+make "ARCH=$ntckit_arc" "CROSS_COMPILE=$ntckit_cross" -j "$ntckit_cores"
+cd ".."
 
 exit 1
 
@@ -61,16 +56,8 @@ exit 1
 #make "ARCH="$ntckit_arc "CROSS_COMPILE="$ntckit_cross "LOCALVERSION="$ntckit_suffix -j $ntckit_cores
 #cd ".."
 
-cd "buildroot"
-if [ ! -f ".config" ]; then
-    make "chip_defconfig"
-fi
-make menuconfig
 #toolchain type = buildroot
-make
 #http://dn.odroid.com/toolchains/
-cd ".."
 
 
 
-echo " - Build complete"
